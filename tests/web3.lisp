@@ -1,6 +1,5 @@
 (defpackage web3-test
-  (:use :cl
-        :web3
+  (:use :cl :web3
         :prove))
 (in-package :web3-test)
 
@@ -59,7 +58,7 @@
 
 ;; special variables
 (defvar *http-uri* "http://localhost:8545")
-(defvar *ipc-uri* (namestring (merge-pathnames "tests/client-data/geth.ipc")))
+(defvar *ipc-uri* (namestring (merge-pathnames "client-data/geth.ipc" (directory-namestring *load-truename*))))
 (defvar *test-result* nil)
 (defvar *account-1* "0x76bb8a9c121513a26c20af5342c9a926ffea5885")
 (defvar *noexist-account* "0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0")
