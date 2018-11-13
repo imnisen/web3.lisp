@@ -11,6 +11,21 @@
   ;; interfaces
   (:export #:web3/client-version
            #:web3/sha3
-           #:net/version)
+
+           #:net/version
+           #:net/listening
+           #:net/peer-count
+
+           #:eth/protocol-version
+           #:eth/syncing
+           #:eth/coinbase
+           #:eth/mining
+           #:eth/hashrate
+           #:eth/gas-price
+           #:eth/accounts
+           #:eth/block-number
+           #:eth/get-balance
+           #:eth/get-storage-at
+           )
 
   )

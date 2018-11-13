@@ -6,7 +6,8 @@
   ())
 
 (defmethod make-request ((provider HTTPProvider) method params)
-  ;; (format t "~%request by http~%")
+  ;; (format t "~%request by http, params:~a ~%" params)
+
   (let ((raw-body (construct-body provider method params)))
 
     (drakma:http-request (provider-uri provider)

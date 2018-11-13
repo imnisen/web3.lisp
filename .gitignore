@@ -6,4 +6,6 @@
 *.x86f
 *~
 .#*
+*.html
 tests/client-data/geth/*
+tests/client-data/history

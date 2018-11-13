@@ -48,11 +48,30 @@
          (handle-response p
                           (make-request p ,method (list ,@params)))))) )
 
-
+;;; web3
 (declare-endpoint "web3_clientVersion")
 (declare-endpoint "web3_sha3" data)
 
+;;; net
 (declare-endpoint "net_version")
+(declare-endpoint "net_listening")
+(declare-endpoint "net_peerCount")  ; returns:  QUANTITY - integer of the number of connected peers.
+
+;;; eth
+(declare-endpoint "eth_protocolVersion")
+(declare-endpoint "eth_syncing")
+(declare-endpoint "eth_coinbase")
+(declare-endpoint "eth_mining")
+(declare-endpoint "eth_hashrate")
+(declare-endpoint "eth_gasPrice")
+(declare-endpoint "eth_accounts")
+(declare-endpoint "eth_blockNumber")
+(declare-endpoint "eth_getBalance" address quantity/tag)
+(declare-endpoint "eth_getStorageAt" address quantity quantity/tag)
+
+
+
+
 
 
 
