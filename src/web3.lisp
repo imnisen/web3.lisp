@@ -68,8 +68,15 @@
 (declare-endpoint "eth_blockNumber")
 (declare-endpoint "eth_getBalance" address quantity/tag)
 (declare-endpoint "eth_getStorageAt" address quantity quantity/tag)
-
-
+(declare-endpoint "eth_getTransactionCount" address quantity/tag)
+;; uncomment when testcase finished
+;; (declare-endpoint "eth_getBlockTransactionCountByHash" block-hash)
+;; (declare-endpoint "eth_getBlockTransactionCountByNumber" quantity/tag)
+;; (declare-endpoint "eth_getUncleCountByBlockHash" block-hash)
+;; (declare-endpoint "eth_getUncleCountByBlockNumber" quantity/tag)
+;; (declare-endpoint "eth_getCode" address quantity/tag)
+;; (declare-endpoint "eth_sign" address data)
+;; (declare-endpoint "eth_sendTransaction" transaction-object)
 
 
 

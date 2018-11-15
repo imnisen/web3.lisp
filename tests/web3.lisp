@@ -62,6 +62,9 @@
 (defvar *test-result* nil)
 (defvar *account-1* "0x76bb8a9c121513a26c20af5342c9a926ffea5885")
 (defvar *noexist-account* "0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0")
+(defvar *address-1* "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b")
+
+(defvar *block-hash* '()) ;; todo will be get from another function
 
 
 ;; web3
@@ -135,7 +138,49 @@
 
 (define-test-pack (eth/get-storage-at *noexist-account* "0x0" "latest")
     (ok (starts-with-hex-p *test-result*)
-        "Can return the balance of an address"))
+        "Can return the value from a storage position at a given address"))
+
+(define-test-pack (eth/get-transaction-count *account-1*  "latest")
+    (ok (starts-with-hex-p *test-result*)
+        "Can return number of transactions from a given address"))
+
+;; uncomment when *block-hash* defined
+;; (define-test-pack (eth/get-block-transaction-count-by-hash *block-hash*)
+;;     (ok (starts-with-hex-p *test-result*)
+;;         "Can return number of block transactions from a block hash"))
+
+;; (define-test-pack (eth/get-block-transaction-count-by-number "latest")
+;;     (ok (starts-with-hex-p *test-result*)
+;;         "Can return number of block transactions from a block number"))
+
+;; (define-test-pack (eth/get-uncle-count-by-block-hash *block-hash*)
+;;     (ok (starts-with-hex-p *test-result*)
+;;         "Can return the number of uncles in a block from a block matching the given block hash."))
+
+;; (define-test-pack (eth/get-uncle-count-by-block-number "latest")
+;;     (ok (starts-with-hex-p *test-result*)
+;;         "Can return the number of uncles in a block from a block matching the given block number."))
+
+;; (define-test-pack (eth/get-code *address-1* "latest")
+;;     (ok (starts-with-hex-p *test-result*)
+;;         "Can return code at a given address."))
+
+;; (define-test-pack (eth/sign *account-1* "0xdeadbeaf")
+;;     (ok (starts-with-hex-p *test-result*)
+;;         "Can sign data"))
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

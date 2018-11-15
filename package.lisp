@@ -26,6 +26,7 @@
            #:eth/block-number
            #:eth/get-balance
            #:eth/get-storage-at
+           #:eth/get-transaction-count
            )
 
   )
