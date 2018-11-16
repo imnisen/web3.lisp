@@ -7,6 +7,19 @@
 (defun response-error (response)
   (cdr (assoc :error response)))
 
+
+(defun make-transaction-object (&key from to gas gas-price value data nonce)
+  (if (not (and from to data))
+      (error "`from`, `to` and `data` are not optional")
+      (remove nil
+              `((:from . ,from)
+                (:to . ,to)
+                ,(when gas `(:gas . ,gas))
+                ,(when gas-price `(:gasPrice . ,gas-price))
+                ,(when value `(:value . ,value))
+                (:data . ,data)
+                ,(when nonce `(:nonce . ,nonce))))))
+
 ;; ;; not used
 ;; ;; read-sequence
 ;; (defun read-all-char-by-char (stream)
@@ -69,14 +82,27 @@
 (declare-endpoint "eth_getBalance" address quantity/tag)
 (declare-endpoint "eth_getStorageAt" address quantity quantity/tag)
 (declare-endpoint "eth_getTransactionCount" address quantity/tag)
-;; uncomment when testcase finished
-;; (declare-endpoint "eth_getBlockTransactionCountByHash" block-hash)
-;; (declare-endpoint "eth_getBlockTransactionCountByNumber" quantity/tag)
-;; (declare-endpoint "eth_getUncleCountByBlockHash" block-hash)
-;; (declare-endpoint "eth_getUncleCountByBlockNumber" quantity/tag)
-;; (declare-endpoint "eth_getCode" address quantity/tag)
-;; (declare-endpoint "eth_sign" address data)
-;; (declare-endpoint "eth_sendTransaction" transaction-object)
+(declare-endpoint "eth_getBlockTransactionCountByHash" block-hash)
+(declare-endpoint "eth_getBlockTransactionCountByNumber" quantity/tag)
+(declare-endpoint "eth_getUncleCountByBlockHash" block-hash)
+(declare-endpoint "eth_getUncleCountByBlockNumber" quantity/tag)
+(declare-endpoint "eth_getCode" address quantity/tag)
+(declare-endpoint "eth_sign" address data)
+(declare-endpoint "eth_sendTransaction" transaction-object)
+(declare-endpoint "eth_sendRawTransaction" signed-transaction-data)
+(declare-endpoint "eth_call" transaction-object quantity/tag)
+
+(declare-endpoint "eth_estimateGas" transaction-block)
+(declare-endpoint "eth_getBlockByHash" block-hash full-tx-p)
+
+(declare-endpoint "eth_getBlockByNumber" quantity/tag full-tx-p)
+
+(declare-endpoint "eth_getTransactionByHash" transaction-hash)
+
+(declare-endpoint "eth_getTransactionByBlockHashAndIndex" transaction-hash transaction-index)
+
+(declare-endpoint "eth_getTransactionByBlockNumberAndIndex" quantity/tag transaction-index)
+
 
 
 

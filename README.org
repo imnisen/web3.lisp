@@ -64,3 +64,9 @@ Explain:
 ** Copyright
 
 This project comes with a [[https://opensource.org/licenses/bsd-license.php][BSD-style license]] so you can basically do with it whatever you want.
+
+** TODOLIST
+- [ ] ~Uify declare-endpoint~ params semantics or type
+- [ ] Test cases defvar
+- [ ] Make test pass
+- [ ] Export packages
