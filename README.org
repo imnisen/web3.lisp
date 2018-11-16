@@ -9,21 +9,44 @@ Inspire and steal from  https://github.com/tsikov/ethi
 
 1) Clone to somewhere ~quicklisp~ can find, such as ~/quicklisp/local-projects~
 2) Run ~(ql:quickload :web3)~ in lisp repl to load it
-3) Demo: call ~web3_clientVersion~
+3) In repl
+
+Demo1: call ~web3_clientVersion~ with http
+
 #+BEGIN_SRC
 
 ;; set global web3:*provider*, then call method
 
-(setf web3:*provider* (make-instance 'web3:HTTPprovider :uri "http://localhost:8545"))
+(setf web3:*provider* (make-instance 'web3:HTTPProvider :uri "http://localhost:8545"))
 
 (web3:web3/client-version)
 
 
 ;; Or pass provider as key argument
 
-(web3/client-version :key provider (make-instance 'web3:HTTPprovider :uri "http://localhost:8545"))
+(web3/client-version :key provider (make-instance 'web3:HTTPProvider :uri "http://localhost:8545"))
 
 #+END_SRC
+
+Demo2: call ~web3_clientVersion~ with ipc
+
+#+BEGIN_SRC
+
+;; set global web3:*provider*, then call method
+
+(setf web3:*provider* (make-instance 'web3:IPCProvider :uri "/path/to/geth.ipc"))
+
+(web3:web3/client-version)
+
+
+;; Or pass provider as key argument
+
+(web3/client-version :key provider (make-instance 'web3:IPCProvider :uri "/path/to/geth.ipc"))
+
+#+END_SRC
+
+
+
 
 ** Installation
 
@@ -70,3 +93,37 @@ This project comes with a [[https://opensource.org/licenses/bsd-license.php][BSD
 - [ ] Test cases defvar
 - [ ] Make test pass
 - [ ] Export packages
+** Reference
+*** Jsonrpc wiki
+ https://github.com/ethereum/wiki/wiki/JSON-RPC
+
+*** web3.py
+ - https://github.com/ethereum/web3.py
+ - http://web3py.readthedocs.io/
+
+*** common lisp ethi
+ - https://github.com/tsikov/ethi
+ - Mine https://github.com/imnisen/ethi
+
+
+*** iosocket sample
+ - https://sourceforge.net/p/sbcl/mailman/message/32846557/
+ - Tutorial http://pages.cs.wisc.edu/~psilord/blog/data/iolib-tutorial/tutorial.html
+
+
+** Tmp conetnt
+#+BEGIN_SRC
+;; usecase
+;; set provider first
+;; (setf web3:*provider* (make-instance 'web3:HTTPprovider :uri "http://localhost:8545"))
+;; (setf web3:*provider* (make-instance 'web3:IPCProvider :uri "/Users/nisen/quicklisp/local-projects/ethi/t/client-data/geth.ipc"))
+;; (web3:web3/client-version)
+;; (let ((web3:*provider* (make-instance 'web3:HTTPprovider :uri "http://localhost:8545")))
+;;   (web3:web3/client-version))
+
+;; (let ((web3:*provider* (make-instance 'web3:IPCProvider :uri "/Users/nisen/quicklisp/local-projects/ethi/t/client-data/geth.ipc")))
+;;   (web3:web3/client-version))
+
+
+
+#+END_SRC

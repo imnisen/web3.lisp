@@ -20,27 +20,9 @@
                 (:data . ,data)
                 ,(when nonce `(:nonce . ,nonce))))))
 
-;; ;; not used
-;; ;; read-sequence
-;; (defun read-all-char-by-char (stream)
-;;   (with-output-to-string (out)
-;;     (loop for char = (read-char stream nil nil)
-;;           until (equal char nil)
-;;           do (write-char char out))))
-
-;; (defun read-all-byte-by-byte (stream)
-;;   (with-output-to-string (out)
-;;     (loop for byte = (read-byte stream nil nil)
-;;           until (equal byte nil)
-;;           do (write-byte byte out))))
-
-
-;;; ------------------------------------
-;;; Endpoints
-;;; ------------------------------------
 (defvar *provider* nil)
 
-(defmacro declare-endpoint (method &rest params)
+(defmacro defendpoint (method &rest params)
   (labels ((camel-case-to-kebab-case (str)
              (with-output-to-string (out)
                (loop for c across str
@@ -49,76 +31,86 @@
                      else
                      do (format out "~A" (char-upcase c)))))
            (geth-method-to-cl-method (geth-method)
-             (let* (;; this will deal with the namespace: _ -> /
-                    (cl-method (substitute #\/ #\_ geth-method))
-                    ;; this will deal with the case: fooBar -> foo-bar
+             (let* ((cl-method (substitute #\/ #\_ geth-method))
                     (cl-method (camel-case-to-kebab-case cl-method)))
                cl-method)))
 
-    ;; The macro itself is really simple.
     `(defun ,(intern (geth-method-to-cl-method method)) ,(append params '(&key (provider nil provider-p)))
        (let ((p (or (and provider-p provider) *provider*)))
          (handle-response p
                           (make-request p ,method (list ,@params)))))) )
 
+;;; ------------------------------------
+;;; Endpoints
+;;; ------------------------------------
+
 ;;; web3
-(declare-endpoint "web3_clientVersion")
-(declare-endpoint "web3_sha3" data)
+(defendpoint "web3_clientVersion")
+(defendpoint "web3_sha3" data)
 
 ;;; net
-(declare-endpoint "net_version")
-(declare-endpoint "net_listening")
-(declare-endpoint "net_peerCount")  ; returns:  QUANTITY - integer of the number of connected peers.
+(defendpoint "net_version")
+(defendpoint "net_listening")
+(defendpoint "net_peerCount")
 
 ;;; eth
-(declare-endpoint "eth_protocolVersion")
-(declare-endpoint "eth_syncing")
-(declare-endpoint "eth_coinbase")
-(declare-endpoint "eth_mining")
-(declare-endpoint "eth_hashrate")
-(declare-endpoint "eth_gasPrice")
-(declare-endpoint "eth_accounts")
-(declare-endpoint "eth_blockNumber")
-(declare-endpoint "eth_getBalance" address quantity/tag)
-(declare-endpoint "eth_getStorageAt" address quantity quantity/tag)
-(declare-endpoint "eth_getTransactionCount" address quantity/tag)
-(declare-endpoint "eth_getBlockTransactionCountByHash" block-hash)
-(declare-endpoint "eth_getBlockTransactionCountByNumber" quantity/tag)
-(declare-endpoint "eth_getUncleCountByBlockHash" block-hash)
-(declare-endpoint "eth_getUncleCountByBlockNumber" quantity/tag)
-(declare-endpoint "eth_getCode" address quantity/tag)
-(declare-endpoint "eth_sign" address data)
-(declare-endpoint "eth_sendTransaction" transaction-object)
-(declare-endpoint "eth_sendRawTransaction" signed-transaction-data)
-(declare-endpoint "eth_call" transaction-object quantity/tag)
+(defendpoint "eth_protocolVersion")
+(defendpoint "eth_syncing")
+(defendpoint "eth_coinbase")
+(defendpoint "eth_mining")
+(defendpoint "eth_hashrate")
+(defendpoint "eth_gasPrice")
+(defendpoint "eth_accounts")
+(defendpoint "eth_blockNumber")
+(defendpoint "eth_getBalance" address quantity/tag)
+(defendpoint "eth_getStorageAt" address quantity quantity/tag)
+(defendpoint "eth_getTransactionCount" address quantity/tag)
+(defendpoint "eth_getBlockTransactionCountByHash" block-hash)
+(defendpoint "eth_getBlockTransactionCountByNumber" quantity/tag)
+(defendpoint "eth_getUncleCountByBlockHash" block-hash)
+(defendpoint "eth_getUncleCountByBlockNumber" quantity/tag)
+(defendpoint "eth_getCode" address quantity/tag)
+(defendpoint "eth_sign" address data)
+(defendpoint "eth_sendTransaction" transaction-object)
+(defendpoint "eth_sendRawTransaction" signed-transaction-data)
+(defendpoint "eth_call" transaction-object quantity/tag)
+(defendpoint "eth_estimateGas" transaction-block)
+(defendpoint "eth_getBlockByHash" block-hash full-tx-p)
+(defendpoint "eth_getBlockByNumber" quantity/tag full-tx-p)
+(defendpoint "eth_getTransactionByHash" transaction-hash)
+(defendpoint "eth_getTransactionByBlockHashAndIndex" transaction-hash transaction-index)
+(defendpoint "eth_getTransactionByBlockNumberAndIndex" quantity/tag transaction-index)
+(defendpoint "eth_getTransactionReceipt" transaction-hash)
+;; -> Here start use "semantic/types*" style of params
+(defendpoint "eth_getUncleByBlockHashAndIndex" block-hash uncle-index/quanity)
+(defendpoint "eth_getUncleByBlockNumberAndIndex" block-number/quanity/tag uncle-index/quanity)
+;;; Note, not include some deprecated apis
+(defendpoint "eth_newFilter" filter-options/filter-object)
+;; -> Here start use new def style, need to modify defendpoint latter
+(defendpoint "eth_newBlockFilter")
+(defendpoint "eth_newPendingTransactionFilter")
+(defendpoint "eth_uninstallFilter" filter-id/quantity)
+(defendpoint "eth_getFilterChanges" filter-id/quantity)
+(defendpoint "eth_getFilterLogs" filter-id/quantity)
+(defendpoint "eth_getLogs" filter-options/filter-object)
+(defendpoint "eth_getWork")
+(defendpoint "eth_submitWork" nonce/hexstring-8bytes header-pow-hash/hexstring-32bytes mix-digest/hexstring-32bytes)
+(defendpoint "eth_submitHashrate" hashrate/hexstring-32bytes id/hexstring-32bytes)
 
-(declare-endpoint "eth_estimateGas" transaction-block)
-(declare-endpoint "eth_getBlockByHash" block-hash full-tx-p)
+;; db
+(defendpoint "db_putString" database-name/string key-name/string string-to-store/string)
+(defendpoint "db_getString" database-name/string key-name/string)
+(defendpoint "db_putHex"  database-name/string key-name/string data-to-sore/hexstring)
+(defendpoint "db_getHex"  database-name/string key-name/string )
 
-(declare-endpoint "eth_getBlockByNumber" quantity/tag full-tx-p)
-
-(declare-endpoint "eth_getTransactionByHash" transaction-hash)
-
-(declare-endpoint "eth_getTransactionByBlockHashAndIndex" transaction-hash transaction-index)
-
-(declare-endpoint "eth_getTransactionByBlockNumberAndIndex" quantity/tag transaction-index)
-
-
-
-
-
-
-
-
-
-
-;; usecase
-;; set provider first
-;; (setf web3:*provider* (make-instance 'web3:HTTPprovider :uri "http://localhost:8545"))
-;; (setf web3:*provider* (make-instance 'web3:IPCProvider :uri "/Users/nisen/quicklisp/local-projects/ethi/t/client-data/geth.ipc"))
-;; (web3:web3/client-version)
-;; (let ((web3:*provider* (make-instance 'web3:HTTPprovider :uri "http://localhost:8545")))
-;;   (web3:web3/client-version))
-
-;; (let ((web3:*provider* (make-instance 'web3:IPCProvider :uri "/Users/nisen/quicklisp/local-projects/ethi/t/client-data/geth.ipc")))
-;;   (web3:web3/client-version))
+;; ssh
+(defendpoint "ssh_version")
+(defendpoint "ssh_post" whisper-object/whisper-object)
+(defendpoint "ssh_newIdentity" )
+(defendpoint "ssh_hasIndentity" identity-address/hexstring-60bytes)
+(defendpoint "ssh_newGroup")
+(defendpoint "ssh_addTogroup" )
+(defendpoint "ssh_newFilter" filter-options/filter-object2)
+(defendpoint "ssh_uninstallFilter" filter-id/quantity)
+(defendpoint "shh_getFilterChanges" filter-id/quantity)
+(defendpoint "shh_getMessages" filter-id/quantity)
