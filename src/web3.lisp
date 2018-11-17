@@ -3,11 +3,10 @@
 ;;; ------------------------------------
 ;;; Utils
 ;;; ------------------------------------
-
 (defun response-error (response)
   (cdr (assoc :error response)))
 
-
+;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sendtransaction parameters description
 (defun make-transaction-object (&key from to gas gas-price value data nonce)
   (if (not (and from to data))
       (error "`from`, `to` and `data` are not optional")
@@ -19,6 +18,69 @@
                 ,(when value `(:value . ,value))
                 (:data . ,data)
                 ,(when nonce `(:nonce . ,nonce))))))
+
+;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_call parameters description
+(defun make-transaction-object2 (&key from to gas gas-price value data nonce)
+  (if (not to)
+      (error "to are not optional")
+      (remove nil
+              `(,(when from `(:from . ,from))
+                (:to . ,to)
+                ,(when gas `(:gas . ,gas))
+                ,(when gas-price `(:gasPrice . ,gas-price))
+                ,(when value `(:value . ,value))
+                ,(when data `(:data . ,data))
+                ,(when nonce `(:nonce . ,nonce))))))
+
+;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_estimategas parameters description
+(defun make-transaction-object3 (&key from to gas gas-price value data nonce)
+  (if (not to)
+      (error "to are not optional")
+      (remove nil
+              `(,(when from `(:from . ,from))
+                (:to . ,to)
+                ,(when gas `(:gas . ,gas))
+                ,(when gas-price `(:gasPrice . ,gas-price))
+                ,(when value `(:value . ,value))
+                ,(when data `(:data . ,data))
+                ,(when nonce `(:nonce . ,nonce))))))
+
+;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_newfilter parameters description
+(defun make-filter-object (&key from-block to-block address topics)
+  (remove nil
+          `(,(when from-block `(:fromBlock . ,from-block))
+            ,(when to-block `(:toBlock . ,to-block))
+            ,(when address `(:address . ,address))
+            ,(when topics `(:topics . ,topics)))))
+
+;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getlogs parameters description
+(defun make-filter-object2 (&key from-block to-block address topics blockhash)
+  (remove nil
+          `(,(when from-block `(:fromBlock . ,from-block))
+            ,(when to-block `(:toBlock . ,to-block))
+            ,(when address `(:address . ,address))
+            ,(when topics `(:topics . ,topics))
+            ,(when blockhash `(:blockhash . ,blockhash)))))
+
+;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#shh_newfilter parameters description
+(defun make-filter-object3 (&key to topics)
+  (if (not topics)
+      (error "topics is not optional")
+      (remove nil
+              `(,(when to `(:to . ,to))
+                (:topics . ,topics)))))
+
+;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#shh_post parameters description
+(defun make-whisper-object (&key from to topics payload priority ttl)
+  (if (not (and topics payload priority ttl))
+      (error "`topics`, `payload`, `priority,  and `ttl` are not optional")
+      (remove nil
+              `(,(when from `(:from . ,from))
+                ,(when to `(:to . ,to))
+                (:topics . ,topics)
+                (:payload . ,payload)
+                (:priority . ,priority)
+                (:ttl . ,ttl)))))
 
 (defvar *provider* nil)
 
@@ -37,16 +99,39 @@
 
     `(defun ,(intern (geth-method-to-cl-method method)) ,(append params '(&key (provider nil provider-p)))
        (let ((p (or (and provider-p provider) *provider*)))
-         (handle-response p
-                          (make-request p ,method (list ,@params)))))) )
+         (handle-response p (make-request p ,method (list ,@params)))))) )
 
 ;;; ------------------------------------
 ;;; Endpoints
 ;;; ------------------------------------
 
+;; Refer to  https://github.com/ethereum/wiki/wiki/JSON-RPC#hex-value-encoding,
+;; there are two key data types: quantity and unformatted data,
+;; quantity is used for integers and numbers,
+;; unformatted data is for byte arrays, account addresses, hashes, bytecode arrays
+;; they will be denote as `quanity` and `udata` in the follwing endpoints.
+
+;; There is also string type
+
+;; As https://github.com/ethereum/wiki/wiki/JSON-RPC#the-default-block-parameter, there is another
+;; type: tag, whose value is one of following: (String "earliest, String "latest", String "pending", HEX String integer)
+
+;; There are some addition types:
+;; transaction-object, made from `make-transaction-object`
+;; transaction-object2, made from `make-transaction-object2`
+;; transaction-object3, made from `make-transaction-object3`
+;; filter-object, made from `make-filter-object`
+;; filter-object2, made from `make-filter-object2`
+;; filter-object3, made from `make-filter-object3`
+;; whisper-object, made from `make-whisper-object`
+
+;; The follwing endpoints parameters use ""semantic/type1/type2"" fomart.
+;; so `block-address/udata` means this paramter is a block address , whose format is a unformatted data,
+;; sometimes, we will add number of bytes behind type, like: udata-20bytes
+
 ;;; web3
 (defendpoint "web3_clientVersion")
-(defendpoint "web3_sha3" data)
+(defendpoint "web3_sha3" data/udata)
 
 ;;; net
 (defendpoint "net_version")
@@ -62,55 +147,53 @@
 (defendpoint "eth_gasPrice")
 (defendpoint "eth_accounts")
 (defendpoint "eth_blockNumber")
-(defendpoint "eth_getBalance" address quantity/tag)
-(defendpoint "eth_getStorageAt" address quantity quantity/tag)
-(defendpoint "eth_getTransactionCount" address quantity/tag)
-(defendpoint "eth_getBlockTransactionCountByHash" block-hash)
-(defendpoint "eth_getBlockTransactionCountByNumber" quantity/tag)
-(defendpoint "eth_getUncleCountByBlockHash" block-hash)
-(defendpoint "eth_getUncleCountByBlockNumber" quantity/tag)
-(defendpoint "eth_getCode" address quantity/tag)
-(defendpoint "eth_sign" address data)
+(defendpoint "eth_getBalance" address/udata-20bytes block/quantity/tag)
+(defendpoint "eth_getStorageAt" address/udata-20bytes position/quantity block/quantity/tag)
+(defendpoint "eth_getTransactionCount" address/udata-20bytes block/quantity/tag)
+(defendpoint "eth_getBlockTransactionCountByHash" blockhash/udata-32bytes)
+(defendpoint "eth_getBlockTransactionCountByNumber" block/quantity/tag)
+(defendpoint "eth_getUncleCountByBlockHash" blockhash/udata-32bytes)
+(defendpoint "eth_getUncleCountByBlockNumber" block/quantity/tag)
+(defendpoint "eth_getCode" address/udata-20bytes block/quantity/tag)
+(defendpoint "eth_sign" address/udata-20bytes message/udata-nbytes)
 (defendpoint "eth_sendTransaction" transaction-object)
-(defendpoint "eth_sendRawTransaction" signed-transaction-data)
-(defendpoint "eth_call" transaction-object quantity/tag)
-(defendpoint "eth_estimateGas" transaction-block)
-(defendpoint "eth_getBlockByHash" block-hash full-tx-p)
-(defendpoint "eth_getBlockByNumber" quantity/tag full-tx-p)
-(defendpoint "eth_getTransactionByHash" transaction-hash)
-(defendpoint "eth_getTransactionByBlockHashAndIndex" transaction-hash transaction-index)
-(defendpoint "eth_getTransactionByBlockNumberAndIndex" quantity/tag transaction-index)
-(defendpoint "eth_getTransactionReceipt" transaction-hash)
-;; -> Here start use "semantic/types*" style of params
-(defendpoint "eth_getUncleByBlockHashAndIndex" block-hash uncle-index/quanity)
-(defendpoint "eth_getUncleByBlockNumberAndIndex" block-number/quanity/tag uncle-index/quanity)
-;;; Note, not include some deprecated apis
-(defendpoint "eth_newFilter" filter-options/filter-object)
-;; -> Here start use new def style, need to modify defendpoint latter
+(defendpoint "eth_sendRawTransaction" signed-transaction-data/udata)
+(defendpoint "eth_call" transaction-object2 block/quantity/tag)
+(defendpoint "eth_estimateGas" transaction-object3)
+(defendpoint "eth_getBlockByHash" blockhash/udata-32bytes full-tx/boolean)
+(defendpoint "eth_getBlockByNumber" block/quantity/tag full-tx/boolean)
+(defendpoint "eth_getTransactionByHash" transaction-hash/udata-32bytes)
+(defendpoint "eth_getTransactionByBlockHashAndIndex" blockhash/udata-32bytes transaction-index/quantity)
+(defendpoint "eth_getTransactionByBlockNumberAndIndex" block/quantity/tag transaction-index/quantity)
+(defendpoint "eth_getTransactionReceipt" transaction-hash/udata-32bytes)
+(defendpoint "eth_getUncleByBlockHashAndIndex" blockhash/udata-32bytes uncle-index/quantity)
+(defendpoint "eth_getUncleByBlockNumberAndIndex" block/quantity/tag uncle-index/quantity)
+;; Note, not include some deprecated apis: eth_getCompilers, eth_compileSolidity, eth_compileLLL, eth_compileSerpent
+(defendpoint "eth_newFilter" filter-object)
 (defendpoint "eth_newBlockFilter")
 (defendpoint "eth_newPendingTransactionFilter")
-(defendpoint "eth_uninstallFilter" filter-id/quantity)
-(defendpoint "eth_getFilterChanges" filter-id/quantity)
-(defendpoint "eth_getFilterLogs" filter-id/quantity)
-(defendpoint "eth_getLogs" filter-options/filter-object)
+(defendpoint "eth_uninstallFilter" filterid/quantity)
+(defendpoint "eth_getFilterChanges" filterid/quantity)
+(defendpoint "eth_getFilterLogs" filterid/quantity)
+(defendpoint "eth_getLogs" filter-object2)
 (defendpoint "eth_getWork")
-(defendpoint "eth_submitWork" nonce/hexstring-8bytes header-pow-hash/hexstring-32bytes mix-digest/hexstring-32bytes)
-(defendpoint "eth_submitHashrate" hashrate/hexstring-32bytes id/hexstring-32bytes)
+(defendpoint "eth_submitWork" nonce/udata-8bytes header-pow-hash/udata-32bytes mix-digest/udata-32bytes)
+(defendpoint "eth_submitHashrate" hashrate/udata-32bytes id/udata-32bytes)
 
 ;; db
-(defendpoint "db_putString" database-name/string key-name/string string-to-store/string)
-(defendpoint "db_getString" database-name/string key-name/string)
-(defendpoint "db_putHex"  database-name/string key-name/string data-to-sore/hexstring)
-(defendpoint "db_getHex"  database-name/string key-name/string )
+(defendpoint "db_putString" dbname/string keyname/string string-to-store/string)
+(defendpoint "db_getString" dbname/string keyname/string)
+(defendpoint "db_putHex"  dbname/string keyname/string data-to-sore/udata)
+(defendpoint "db_getHex"  dbname/string keyname/string)
 
-;; ssh
-(defendpoint "ssh_version")
-(defendpoint "ssh_post" whisper-object/whisper-object)
-(defendpoint "ssh_newIdentity" )
-(defendpoint "ssh_hasIndentity" identity-address/hexstring-60bytes)
-(defendpoint "ssh_newGroup")
-(defendpoint "ssh_addTogroup" )
-(defendpoint "ssh_newFilter" filter-options/filter-object2)
-(defendpoint "ssh_uninstallFilter" filter-id/quantity)
-(defendpoint "shh_getFilterChanges" filter-id/quantity)
-(defendpoint "shh_getMessages" filter-id/quantity)
+;; shh
+(defendpoint "shh_version")
+(defendpoint "shh_post" whisper-object)
+(defendpoint "shh_newIdentity")
+(defendpoint "shh_hasIdentity" identity-address/udata-60bytes)
+(defendpoint "shh_newGroup")
+(defendpoint "shh_addTogroup" )
+(defendpoint "shh_newFilter" filter-object3)
+(defendpoint "shh_uninstallFilter" filterid/quantity)
+(defendpoint "shh_getFilterChanges" filterid/quantity)
+(defendpoint "shh_getMessages" filterid/quantity)

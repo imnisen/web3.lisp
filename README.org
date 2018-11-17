@@ -89,10 +89,9 @@ Explain:
 This project comes with a [[https://opensource.org/licenses/bsd-license.php][BSD-style license]] so you can basically do with it whatever you want.
 
 ** TODOLIST
-- [ ] ~Uify declare-endpoint~ params semantics or type
-- [ ] Test cases defvar
-- [ ] Make test pass
-- [ ] Export packages
+- [ ] Add missing inteface tests
+- [ ] Add websocket support
+- [ ] Maybe make long lived provider?
 ** Reference
 *** Jsonrpc wiki
  https://github.com/ethereum/wiki/wiki/JSON-RPC
@@ -111,7 +110,7 @@ This project comes with a [[https://opensource.org/licenses/bsd-license.php][BSD
  - Tutorial http://pages.cs.wisc.edu/~psilord/blog/data/iolib-tutorial/tutorial.html
 
 
-** Tmp conetnt
+** Tmp conetnt                                                                  :noexport:
 #+BEGIN_SRC
 ;; usecase
 ;; set provider first
@@ -126,4 +125,18 @@ This project comes with a [[https://opensource.org/licenses/bsd-license.php][BSD
 
 
 
+
+(defun transfer (lst)
+           (labels ((camel-case-to-kebab-case (str)
+                      (with-output-to-string (out)
+                        (loop for c across str
+                              if (upper-case-p c)
+                              do (format out "-~A" (char-downcase c))
+                              else
+                              do (format out "~A" c))))
+                    (geth-method-to-cl-method (geth-method)
+                      (let* ((cl-method (substitute #\/ #\_ geth-method))
+                             (cl-method (camel-case-to-kebab-case cl-method)))
+                        cl-method)))
+             (mapcar (lambda (x) (format nil "#:~a" (geth-method-to-cl-method x))) lst)))
 #+END_SRC
