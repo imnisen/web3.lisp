@@ -11,7 +11,8 @@
   :version "0.1.0"
   :author "Nisen"
   :license ""
-  :depends-on (#:cl-json
+  :depends-on (#:alexandria
+               #:cl-json
                #:drakma
                #:flexi-streams
                #:iolib)

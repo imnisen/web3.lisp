@@ -110,7 +110,7 @@ This project comes with a [[https://opensource.org/licenses/bsd-license.php][BSD
  - Tutorial http://pages.cs.wisc.edu/~psilord/blog/data/iolib-tutorial/tutorial.html
 
 
-** Tmp conetnt                                                                  :noexport:
+** Tmp content                                                                  :noexport:
 #+BEGIN_SRC
 ;; usecase
 ;; set provider first

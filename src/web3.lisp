@@ -6,81 +6,78 @@
 (defun response-error (response)
   (cdr (assoc :error response)))
 
+;; Help set fileds to hash table
+;; generate code like below, according to required fields or optional fileds
+;; (LET (#:G767 (MAKE-HASH-TABLE :TEST 'EQUAL))
+;;   (SETF (GETHASH "from" #:G767) FROM)
+;;   (SETF (GETHASH "to" #:G767) TO)
+;;   (SETF (GETHASH "data" #:G767) DATA)
+;;   (WHEN GAS (SETF (GETHASH "gas" #:G767) GAS))
+;;   (WHEN GAS-PRICE (SETF (GETHASH "gasPrice" #:G767) GAS-PRICE))
+;;   (WHEN VALUE (SETF (GETHASH "value" #:G767) VALUE))
+;;   (WHEN NONCE (SETF (GETHASH "nonce" #:G767) NONCE))
+;;   #:G767)
+;; The reason to use hash table to collect values (for cl-json encode to string)
+;; instead list is because:
+;; when I want to make some conditon like {"a":1, "b" : [{"c": [1,2,3]}]} very fuzzy:
+;; > (cl-json:encode-json-to-string '(("a" . 1) ("b" . ("c" . ( 1 2 3)))))
+;; "{\"a\":1,\"b\":[\"c\",1,2,3]}"
+(defmacro generate-hash (require-fileds optional-fields)
+  (labels ((kebab-case-to-camel-case (str)
+             (with-output-to-string (out)
+               (loop
+                 :with offset := 1
+                 :for i := 0 :then (+ i offset)
+                 :while (< i (length str))
+                 :if (char-equal (char str i) #\-)
+                 :do (progn (format out "~a" (char-upcase (char str (+ 1 i)))) (setf offset 2))
+                 :else
+                 :do (progn (format out "~a" (char-downcase (char str i))) (setf offset 1))))))
+    (with-gensyms (g)
+      `(let ((,g (make-hash-table :test 'equal)))
+         ,@(mapcar #'(lambda (x) `(setf (gethash ,(kebab-case-to-camel-case (string x)) ,g) ,x)) require-fileds)
+         ,@(mapcar #'(lambda (x) `(when ,x (setf (gethash ,(kebab-case-to-camel-case (string x)) ,g) ,x))) optional-fields)
+         ,g
+         ))))
+
 ;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sendtransaction parameters description
 (defun make-transaction-object (&key from to gas gas-price value data nonce)
   (if (not (and from to data))
       (error "`from`, `to` and `data` are not optional")
-      (remove nil
-              `((:from . ,from)
-                (:to . ,to)
-                ,(when gas `(:gas . ,gas))
-                ,(when gas-price `(:gasPrice . ,gas-price))
-                ,(when value `(:value . ,value))
-                (:data . ,data)
-                ,(when nonce `(:nonce . ,nonce))))))
+      (generate-hash (from to data) (gas gas-price value nonce))))
+
 
 ;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_call parameters description
 (defun make-transaction-object2 (&key from to gas gas-price value data nonce)
   (if (not to)
       (error "to are not optional")
-      (remove nil
-              `(,(when from `(:from . ,from))
-                (:to . ,to)
-                ,(when gas `(:gas . ,gas))
-                ,(when gas-price `(:gasPrice . ,gas-price))
-                ,(when value `(:value . ,value))
-                ,(when data `(:data . ,data))
-                ,(when nonce `(:nonce . ,nonce))))))
+      (generate-hash (to) (from gas gas-price value data nonce))))
 
 ;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_estimategas parameters description
 (defun make-transaction-object3 (&key from to gas gas-price value data nonce)
-  (if (not to)
-      (error "to are not optional")
-      (remove nil
-              `(,(when from `(:from . ,from))
-                (:to . ,to)
-                ,(when gas `(:gas . ,gas))
-                ,(when gas-price `(:gasPrice . ,gas-price))
-                ,(when value `(:value . ,value))
-                ,(when data `(:data . ,data))
-                ,(when nonce `(:nonce . ,nonce))))))
+  (generate-hash () (from to gas gas-price value data nonce)))
+
 
 ;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_newfilter parameters description
 (defun make-filter-object (&key from-block to-block address topics)
-  (remove nil
-          `(,(when from-block `(:fromBlock . ,from-block))
-            ,(when to-block `(:toBlock . ,to-block))
-            ,(when address `(:address . ,address))
-            ,(when topics `(:topics . ,topics)))))
+  (generate-hash () (from-block to-block address topics)))
 
 ;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getlogs parameters description
 (defun make-filter-object2 (&key from-block to-block address topics blockhash)
-  (remove nil
-          `(,(when from-block `(:fromBlock . ,from-block))
-            ,(when to-block `(:toBlock . ,to-block))
-            ,(when address `(:address . ,address))
-            ,(when topics `(:topics . ,topics))
-            ,(when blockhash `(:blockhash . ,blockhash)))))
+  (generate-hash () (from-block to-block address topics blockhash)))
+
 
 ;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#shh_newfilter parameters description
 (defun make-filter-object3 (&key to topics)
   (if (not topics)
       (error "topics is not optional")
-      (remove nil
-              `(,(when to `(:to . ,to))
-                (:topics . ,topics)))))
+      (generate-hash (topics) (to))))
 
 ;; Refer https://github.com/ethereum/wiki/wiki/JSON-RPC#shh_post parameters description
 (defun make-whisper-object (&key from to topics payload priority ttl)
   (if (not (and topics payload priority ttl))
       (error "`topics`, `payload`, `priority,  and `ttl` are not optional")
-      (remove nil
-              `(,(when from `(:from . ,from))
-                ,(when to `(:to . ,to))
-                (:topics . ,topics)
-                (:payload . ,payload)
-                (:priority . ,priority)
-                (:ttl . ,ttl)))))
+      (generate-hash (topics payload priority ttl) (from to))))
 
 (defvar *provider* nil)
 
@@ -175,6 +172,7 @@
 (defendpoint "eth_uninstallFilter" filterid/quantity)
 (defendpoint "eth_getFilterChanges" filterid/quantity)
 (defendpoint "eth_getFilterLogs" filterid/quantity)
+;;; -> test progress here
 (defendpoint "eth_getLogs" filter-object2)
 (defendpoint "eth_getWork")
 (defendpoint "eth_submitWork" nonce/udata-8bytes header-pow-hash/udata-32bytes mix-digest/udata-32bytes)

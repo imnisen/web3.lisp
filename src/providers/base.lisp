@@ -31,7 +31,7 @@
   (cl-json:encode-json-to-string `(("jsonrpc" . "2.0")
                                    ("method" . ,method)
                                    ("params" . ,params)
-                                   ("id" . 1))))  ;; assume id 1 here, but will be moved to JSONbaseprovider and set auto
+                                   ("id" . 1))))  ;; TODO assume id 1 here, but will be moved to JSONbaseprovider and set auto
 
 (defmethod destructure-response ((provider JSONBaseProvider) (response string))
   (cl-json:decode-json-from-string response))

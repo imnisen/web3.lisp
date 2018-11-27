@@ -157,7 +157,7 @@
     (ok (starts-with-hex-p *result*)
         "Can return the most recent block"))
 
-(defvar *account-1* "0x76bb8a9c121513a26c20af5342c9a926ffea5885") ;; from genesis file
+(defparameter *account-1* "0x76bb8a9c121513a26c20af5342c9a926ffea5885") ;; from genesis file
 (deftest (eth/get-balance *account-1* "latest")
     (ok (starts-with-hex-p *result*)
         "Can return the balance of an address"))
@@ -170,7 +170,7 @@
     (ok (starts-with-hex-p *result*)
         "Can return number of transactions from a given address"))
 
-(defvar *block-hash* (cdr (assoc :hash (eth/get-block-by-number "0x1" nil :provider (make-instance 'HTTPprovider :uri *http-uri*)))))
+(defparameter *block-hash* (cdr (assoc :hash (eth/get-block-by-number "0x1" nil :provider (make-instance 'HTTPprovider :uri *http-uri*)))))
 (deftest (eth/get-block-transaction-count-by-hash *block-hash*)
     (ok (starts-with-hex-p *result*)
         "Can return number of block transactions from a block hash"))
@@ -195,8 +195,8 @@
     (ok (starts-with-hex-p *result*)
         "Can sign data"))
 
-(defvar *account-2* "0x7fde6bc5d0560b624609d50e72a736493e3f0e70") ;; from genesis file
-(defvar *transaction-object* (web3:make-transaction-object :from *account-1* :to *account-2*  :value "0x9184e72a" :data "") )
+(defparameter *account-2* "0x7fde6bc5d0560b624609d50e72a736493e3f0e70") ;; from genesis file
+(defparameter *transaction-object* (web3:make-transaction-object :from *account-1* :to *account-2*  :value "0x9184e72a" :data "") )
 (deftest (eth/send-transaction *transaction-object*)
     (ok (transaction-hash-p *result*)
         "Can send transaction"))
@@ -209,12 +209,12 @@
 ;;     (ok (transaction-hash-p *result*)
 ;;         "Can send raw transaction"))
 
-(defvar *transaction-object2* (web3:make-transaction-object2 :to *account-2* ))
+(defparameter *transaction-object2* (web3:make-transaction-object2 :to *account-2* ))
 (deftest (eth/call *transaction-object2*  "latest")
     (ok (starts-with-hex-p *result*)
         "Can execute a new message call immediately without creating a transaction"))
 
-(defvar *transaction-object3* (web3:make-transaction-object3 :from *account-1* :to *account-2* ))
+(defparameter *transaction-object3* (web3:make-transaction-object3 :from *account-1* :to *account-2* ))
 (deftest (eth/estimate-gas *transaction-object3*)
     (ok (starts-with-hex-p *result*)
         "Can make a call or transaction, which won't be added to the blockchain and returns the used gas, which can be used for estimating the used gas"))
@@ -228,7 +228,7 @@
     (ok (block-p *result*)
         "Can return information about a block by number"))
 
-(defvar *transaction-hash* (eth/send-transaction *transaction-object* :provider (make-instance 'HTTPprovider :uri *http-uri*)))
+(defparameter *transaction-hash* (eth/send-transaction *transaction-object* :provider (make-instance 'HTTPprovider :uri *http-uri*)))
 (deftest (eth/get-transaction-by-hash *transaction-hash*)
     (ok (transaction-p *result*)
         "Can return the information about a transaction requested by transaction hash."))
@@ -253,9 +253,40 @@
     (ok (block-p *result*)
         "Can return information about a uncle of a block by block number  and uncle index position."))
 
+(defparameter *filter-object* (web3:make-filter-object :from-block "0x1" :to-block "0x2" :address "0x76bb8a9c121513a26c20af5342c9a926ffea5885" :topics (list "0x000000000000000000000000a94f5374fce5edbc8e2a8697c15331677e6ebf0b" nil (list "0x000000000000000000000000a94f5374fce5edbc8e2a8697c15331677e6ebf0b" "0x0000000000000000000000000aff3454fce5edbc8cca8697c15331677e6ebccc"))))
+(deftest (eth/new-filter *filter-object*)
+    (ok (starts-with-hex-p *result*)
+        "Can creates a filter object."))
 
+(deftest (eth/new-block-filter)
+    (ok (starts-with-hex-p *result*)
+        "Can creates a filter in the node, to notify when a new block arrives."))
 
+(deftest (eth/new-pending-transaction-filter)
+    (ok (starts-with-hex-p *result*)
+        "Can creates a filter in the node, to notify when new pending transactions arrive."))
 
+(defparameter *filter-id* (eth/new-block-filter :provider (make-instance 'HTTPprovider :uri *http-uri*)))
+(deftest (eth/uninstall-filter *filter-id*)
+    (ok (booleanp *result*)
+        "Can uninstalls a filter with given id"))
+
+(defparameter *filter-id2* (eth/new-block-filter :provider (make-instance 'HTTPprovider :uri *http-uri*)))
+(deftest (eth/get-filter-changes *filter-id2*)
+    (ok (listp *result*)
+        "Can polling method for a filter."))
+
+;; ;; TODO get-filter-logs return ""filter not found", figure out later
+;; (defparameter *filter-id3* (eth/new-block-filter :provider (make-instance 'HTTPprovider :uri *http-uri*)))
+;; (deftest (eth/get-filter-logs *filter-id3*)
+;;     (ok (listp *result*)
+;;         "Can Returns an array of all logs matching filter with given id."))
+
+(defparameter *filter-object2* (web3:make-filter-object2 :topics (list "0x000000000000000000000000a94f5374fce5edbc8e2a8697c15331677e6ebf0b" nil)))
+
+(deftest (eth/get-logs *filter-object2*)
+    (ok (listp *result*)
+        "Can returns an array of all logs matching a given filter object."))
 
 
 

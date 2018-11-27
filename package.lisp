@@ -1,5 +1,5 @@
 (defpackage web3
-  (:use :cl)
+  (:use :cl :alexandria)
 
   ;; special variable
   (:export #:*provider*)
