@@ -1,8 +1,11 @@
+
+
 # Web3.lisp
 
 Under active development
 
 Inspire and steal from  <https://github.com/tsikov/ethi>
+
 
 ## Usage
 
@@ -12,6 +15,7 @@ Inspire and steal from  <https://github.com/tsikov/ethi>
 
 Demo1: call `web3_clientVersion` with http
 
+    
     ;; set global web3:*provider*, then call method
     
     (setf web3:*provider* (make-instance 'web3:HTTPProvider :uri "http://localhost:8545"))
@@ -25,6 +29,7 @@ Demo1: call `web3_clientVersion` with http
 
 Demo2: call `web3_clientVersion` with ipc
 
+    
     ;; set global web3:*provider*, then call method
     
     (setf web3:*provider* (make-instance 'web3:IPCProvider :uri "/path/to/geth.ipc"))
@@ -35,6 +40,7 @@ Demo2: call `web3_clientVersion` with ipc
     ;; Or pass provider as key argument
     
     (web3/client-version :key provider (make-instance 'web3:IPCProvider :uri "/path/to/geth.ipc"))
+
 
 ## Installation
 
@@ -60,40 +66,50 @@ To run the tests locally you will need to run a local private testnet.
     - `--password` will use the password provided in the text file
     - `console` will open the console
 
-1.  In the step2 opend console, run `miner.start()` to mine some blocks. After a while, execute `miner.stop()` to stop mining.
+1.  In the step2 opend console, run `miner.start(1)` to start mining.
+
 2.  Run `(asdf:test-system :web3)` inside your repl. I am assuming you cloned the project in a directory that `asdf` can see.
+
 
 ## Author
 
 -   Nisen (imnisen@gmail.com)
 
+
 ## Copyright
 
 This project comes with a [BSD-style license](https://opensource.org/licenses/bsd-license.php) so you can basically do with it whatever you want.
 
-## TODOLIST
+
+## TODO LIST
 
 -   [ ] Add missing inteface tests
 -   [ ] Add websocket support
 -   [ ] Maybe make long lived provider?
 
+
 ## Reference
+
 
 ### Jsonrpc wiki
 
 <https://github.com/ethereum/wiki/wiki/JSON-RPC>
+
 
 ### web3.py
 
 -   <https://github.com/ethereum/web3.py>
 -   <http://web3py.readthedocs.io/>
 
+
 ### common lisp ethi
 
 -   <https://github.com/tsikov/ethi>
 -   Mine <https://github.com/imnisen/ethi>
 
+
 ### iosocket sample
 
 -   <https://sourceforge.net/p/sbcl/mailman/message/32846557/>
 -   Tutorial <http://pages.cs.wisc.edu/~psilord/blog/data/iolib-tutorial/tutorial.html>
+

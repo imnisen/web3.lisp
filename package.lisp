@@ -62,6 +62,7 @@
            #:eth/get-work
            #:eth/submit-work
            #:eth/submit-hashrate
+           #:eth/get-proof
            #:db/put-string
            #:db/get-string
            #:db/put-hex

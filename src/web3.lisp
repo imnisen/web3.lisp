@@ -165,24 +165,28 @@
 (defendpoint "eth_getTransactionReceipt" transaction-hash/udata-32bytes)
 (defendpoint "eth_getUncleByBlockHashAndIndex" blockhash/udata-32bytes uncle-index/quantity)
 (defendpoint "eth_getUncleByBlockNumberAndIndex" block/quantity/tag uncle-index/quantity)
-;; Note, not include some deprecated apis: eth_getCompilers, eth_compileSolidity, eth_compileLLL, eth_compileSerpent
+
+;; Note, not include some deprecated apis:
+;; eth_getCompilers, eth_compileSolidity, eth_compileLLL, eth_compileSerpent
+
 (defendpoint "eth_newFilter" filter-object)
 (defendpoint "eth_newBlockFilter")
 (defendpoint "eth_newPendingTransactionFilter")
 (defendpoint "eth_uninstallFilter" filterid/quantity)
 (defendpoint "eth_getFilterChanges" filterid/quantity)
 (defendpoint "eth_getFilterLogs" filterid/quantity)
-;;; -> test progress here
 (defendpoint "eth_getLogs" filter-object2)
 (defendpoint "eth_getWork")
 (defendpoint "eth_submitWork" nonce/udata-8bytes header-pow-hash/udata-32bytes mix-digest/udata-32bytes)
 (defendpoint "eth_submitHashrate" hashrate/udata-32bytes id/udata-32bytes)
+(defendpoint "eth_getProof" address/udata-20bytes keys/array-32bytes block/quantity/tag)
 
+;; Deprecated
 ;; db
-(defendpoint "db_putString" dbname/string keyname/string string-to-store/string)
-(defendpoint "db_getString" dbname/string keyname/string)
-(defendpoint "db_putHex"  dbname/string keyname/string data-to-sore/udata)
-(defendpoint "db_getHex"  dbname/string keyname/string)
+;; (defendpoint "db_putString" dbname/string keyname/string string-to-store/string)
+;; (defendpoint "db_getString" dbname/string keyname/string)
+;; (defendpoint "db_putHex"  dbname/string keyname/string data-to-sore/udata)
+;; (defendpoint "db_getHex"  dbname/string keyname/string)
 
 ;; shh
 (defendpoint "shh_version")

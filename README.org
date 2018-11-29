@@ -62,11 +62,12 @@ geth --rpc --nodiscover --maxpeers 0 --datadir "tests/client-data" init tests/Cu
 
 ;; Second, run geth
 
-geth --nodiscover --maxpeers 0 --rpc --datadir tests/client-data --networkid 555 --unlock "0,1" --password tests/password.txt console
-
+geth --nodiscover --maxpeers 0 --shh --rpc --rpcapi web3,eth,net,shh --datadir tests/client-data --networkid 555 --unlock "0,1" --password tests/password.txt console
 Explain:
+- `--shh enable Whisper(EXPERIMENTAL)`
 - `--rpc` enables the rpc. Duh...
 - `--nodiscover` will make sure your node is not discoverable.
+- `--rpcapi web3,eth,net,shh` enable web3,eth,net,shh API over the HTTP-RPC interface
 - `--maxpeers 0` will prevent the node from syncing.
 - `init t/CustomGenesis.json` will ensure you create a custom testing blockchain.
 - `--unlock "0,1"` will unlock the first two accounts
@@ -75,8 +76,8 @@ Explain:
 
 #+END_SRC
 
+3) In the step2 opend console, run ~miner.start(1)~ to start mining.
 
-3) In the step2 opend console, run ~miner.start()~ to mine some blocks. After a while, execute ~miner.stop()~ to stop mining.
 4) Run ~(asdf:test-system :web3)~ inside your repl. I am assuming you cloned the project in a directory that ~asdf~ can see.
 
 

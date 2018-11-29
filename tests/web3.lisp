@@ -288,11 +288,49 @@
     (ok (listp *result*)
         "Can returns an array of all logs matching a given filter object."))
 
+(deftest (eth/get-work)
+    (ok (and (listp *result*)
+             (= 3 (length *result*))
+             (starts-with-hex-p (first *result*))
+             (starts-with-hex-p (second *result*))
+             (starts-with-hex-p (third *result*)))
+        "Can Returns the hash of the current block, the seedHash, and the boundary condition to be met."))
 
 
+(deftest (eth/submit-work "0x0000000000000001" "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef" "0xD1FE5700000000000000000000000000D1FE5700000000000000000000000000")
+    (ok (booleanp *result*)
+        "Can submit a proof-of-work solution"))
 
 
+;; TODO According to example https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_submithashrate, not work correct
+;; curl -H "Content-Type: application/json" -X POST --data '{"jsonrpc":"2.0","method":"eth_submitHashrate", "params":["0x0000000000000000000000000000000000000000000000000000000000500000", "0x59daa26581d0acd1fce254fb7e85952f4c09d0915afd33d3886cd914bc7d283c"],"id":1}'  127.0.0.1:8545
+;; =>
+;; {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"invalid argument 0: json: cannot unmarshal hex number with leading zero digits into Go value of type hexutil.Uint64"}}
+;; (deftest (eth/submit-hashrate "0x0000000000000000000000000000000000000000000000000000000000500000" "0x59daa26581d0acd1fce254fb7e85952f4c09d0915afd33d3886cd914bc7d283c")
+;;     (ok (booleanp *result*)
+;;         "Can submitting mining hashrate."))
 
+
+(deftest (eth/get-proof "0x1234567890123456789012345678901234567890" '("0x0000000000000000000000000000000000000000000000000000000000000000" "0x0000000000000000000000000000000000000000000000000000000000000001") "latest")
+    (ok (and (listp *result*)
+             (assoc :address *result*)
+             (assoc :banlance *result*)
+             (assoc :code-hash *result*)
+             (assoc :nonce *result*)
+             (assoc :storage-hash *result*)
+             (assoc :storage-proof *result*))
+        "Can returns the account- and storage-values of the specified account including the Merkle-proof."))
+
+
+;; TODO later
+;; (deftest (shh/version)
+;;     (ok (stringp *result*)
+;;         "Can returns the current whisper protocol version."))
+
+;; (defparameter *whispter-object* (web3:make-whisper-object :topics '("0x776869737065722d636861742d636c69656e74" "0x4d5a695276454c39425154466b61693532") :payload "0x68656c6c6f20776f726c64" :priority 100 :ttl 100 :from "0x04f96a5e25610293e42a73908e93ccc8c4d4dc0edcfa9fa872f50cb214e08ebf61a03e245533f97284d442460f2998cd41858798ddfd4d661997d3940272b717b1" :to "0x3e245533f97284d442460f2998cd41858798ddf04f96a5e25610293e42a73908e93ccc8c4d4dc0edcfa9fa872f50cb214e08ebf61a0d4d661997d3940272b717b1"))
+;; (deftest (shh/post *whispter-object*)
+;;     (ok (booleanp *result*)
+;;         "Can sends a whisper message."))
 
 
 
