@@ -2,7 +2,7 @@
 
 # Web3.lisp
 
-Under active development
+A common lisp client library to communicate with Ethereum RPC server.
 
 Inspire and steal from  <https://github.com/tsikov/ethi>
 
@@ -41,8 +41,10 @@ Demo2: call `web3_clientVersion` with ipc
     
     (web3/client-version :key provider (make-instance 'web3:IPCProvider :uri "/path/to/geth.ipc"))
 
+You can check examples in test code `tests/web.lisp`.
 
-## Installation
+
+## Run test
 
 To run the tests locally you will need to run a local private testnet.
 
@@ -55,11 +57,12 @@ To run the tests locally you will need to run a local private testnet.
     
     ;; Second, run geth
     
-    geth --nodiscover --maxpeers 0 --rpc --datadir tests/client-data --networkid 555 --unlock "0,1" --password tests/password.txt console
-    
+    geth --nodiscover --maxpeers 0 --shh --rpc --rpcapi web3,eth,net,shh --datadir tests/client-data --networkid 555 --unlock "0,1" --password tests/password.txt console
     Explain:
+    - `--shh enable Whisper(EXPERIMENTAL)`
     - `--rpc` enables the rpc. Duh...
     - `--nodiscover` will make sure your node is not discoverable.
+    - `--rpcapi web3,eth,net,shh` enable web3,eth,net,shh API over the HTTP-RPC interface
     - `--maxpeers 0` will prevent the node from syncing.
     - `init t/CustomGenesis.json` will ensure you create a custom testing blockchain.
     - `--unlock "0,1"` will unlock the first two accounts
@@ -69,6 +72,65 @@ To run the tests locally you will need to run a local private testnet.
 1.  In the step2 opend console, run `miner.start(1)` to start mining.
 
 2.  Run `(asdf:test-system :web3)` inside your repl. I am assuming you cloned the project in a directory that `asdf` can see.
+
+
+## Implemented JSON-RPC methods
+
+-   `web3_clientVersion`
+-   `web3_sha3`
+-   `net_version`
+-   `net_listening`
+-   `net_peerCount`
+-   `eth_protocolVersion`
+-   `eth_syncing`
+-   `eth_coinbase`
+-   `eth_mining`
+-   `eth_hashrate`
+-   `eth_gasPrice`
+-   `eth_accounts`
+-   `eth_blockNumber`
+-   `eth_getBalance`
+-   `eth_getStorageAt`
+-   `eth_getTransactionCount`
+-   `eth_getBlockTransactionCountByHash`
+-   `eth_getBlockTransactionCountByNumber`
+-   `eth_getUncleCountByBlockHash`
+-   `eth_getUncleCountByBlockNumber`
+-   `eth_getCode`
+-   `eth_sign`
+-   `eth_sendTransaction`
+-   `eth_sendRawTransaction`
+-   `eth_call`
+-   `eth_estimateGas`
+-   `eth_getBlockByHash`
+-   `eth_getBlockByNumber`
+-   `eth_getTransactionByHash`
+-   `eth_getTransactionByBlockHashAndIndex`
+-   `eth_getTransactionByBlockNumberAndIndex`
+-   `eth_getTransactionReceipt`
+-   `eth_getUncleByBlockHashAndIndex`
+-   `eth_getUncleByBlockNumberAndIndex`
+-   `eth_newFilter`
+-   `eth_newBlockFilter`
+-   `eth_newPendingTransactionFilter`
+-   `eth_uninstallFilter`
+-   `eth_getFilterChanges`
+-   `eth_getFilterLogs`
+-   `eth_getLogs`
+-   `eth_getWork`
+-   `eth_submitWork`
+-   `eth_submitHashrate`
+-   `eth_getProof`
+-   `shh_version`
+-   `shh_post`
+-   `shh_newIdentity`
+-   `shh_hasIdentity`
+-   `shh_newGroup`
+-   `shh_addTogroup`
+-   `shh_newFilter`
+-   `shh_uninstallFilter`
+-   `shh_getFilterChanges`
+-   `shh_getMessages`
 
 
 ## Author
